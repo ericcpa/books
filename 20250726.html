@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式行銷策略手冊：怎樣賣龍蝦</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: 我選擇了主題式探索的資訊架構，而非原始大綱的線性結構。我將16個行銷「遊戲」歸納為四大核心主題：顧客心理、價值塑造、策略藍圖、銷售互動。這種結構能讓使用者根據自身需求或興趣，自由探索相關的策略，提升學習效率與參與感。主導覽列提供快速跳轉，而每個策略以可展開的「卡片」形式呈現，初始介面簡潔，點擊後才顯示細節，鼓勵使用者主動探索。結尾的「落地清單」則將理論轉化為可操作的工具，強化實用性。這樣的設計旨在將被動的閱讀轉化為主動的、遊戲化的學習體驗。 -->
+    <!-- Visualization & Content Choices: 
+        - 總論 (Push vs Pull): 使用HTML/CSS製作的互動示意圖，滑鼠懸停時改變樣式，直觀傳達「推銷」與「行銷」的差異。Goal: Compare. Method: Interactive Divs.
+        - 章1 (菜單對比): 使用按鈕切換顯示不同菜單內容，模擬Before/After效果。Goal: Compare. Method: JS Toggle.
+        - 章4 (三盒定價): 互動式價格表，滑鼠懸停時高亮「中杯」選項，並觸發下方的Chart.js長條圖即時更新數據，視覺化呈現「錨定效應」。Goal: Compare/Inform. Method: JS Hover + Chart.js Bar Chart.
+        - 章11 (定位圖): 使用Chart.js的散點圖繪製2x2矩陣，標示出「美食」與「速食」的定位，以及中間的「危險區」。Goal: Organize/Compare. Method: Chart.js Scatter Plot.
+        - 章12 (價值樓梯): 使用HTML/CSS Flexbox製作垂直階梯圖，每階可點擊。Goal: Organize. Method: Styled HTML divs.
+        - 章13 (自評量表): 簡單的HTML表單（radio buttons），使用者選擇後，JS會顯示對應的「診斷結果」。Goal: Inform/Engage. Method: HTML Form + JS Logic.
+        - 章15 (登山嚮導圖): 使用HTML/CSS製作的抽象路徑圖，強調過程與階段性。Goal: Organize. Method: Styled HTML divs.
+        - 其他圖示: 均使用Unicode字符或Tailwind CSS構建的抽象形狀，確保無圖片或SVG。
+        - Justification: 所有互動設計都旨在將抽象的行銷概念具象化、可操作化，加深使用者的理解與記憶。Chart.js用於需要精確數據表達的場景，而簡單的HTML/CSS互動則用於快速、輕量的概念示意。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF7;
+            color: #3D3D3D;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 320px;
+            width: 100%;
+            max-width: 500px;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #D87C5D;
+            border-bottom-color: #D87C5D;
+        }
+        .strategy-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+        .strategy-card .details {
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            visibility: hidden;
+        }
+        .strategy-card.open .details {
+            max-height: 1000px;
+            opacity: 1;
+            visibility: visible;
+        }
+        .strategy-card.open .chevron {
+            transform: rotate(180deg);
+        }
+        .push-pull-door {
+            transition: all 0.3s ease-in-out;
+        }
+        .push-pull-container:hover .push-door {
+            transform: translateX(-5px) rotate(-2deg);
+            border-color: #6B8A9A;
+        }
+        .push-pull-container:hover .pull-door {
+            transform: translateX(5px) rotate(2deg);
+            border-color: #D87C5D;
+        }
+        .value-ladder-step {
+            transition: all 0.3s ease;
+        }
+        .value-ladder-step:hover {
+            transform: translateY(-4px);
+            background-color: #EFEAE3;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header id="header" class="sticky top-0 z-50 bg-[#FDFBF7]/80 backdrop-blur-lg shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl md:text-2xl font-bold text-[#D87C5D]">行銷策略手冊</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#intro" class="nav-link px-3 py-2 rounded-md text-sm font-medium">總論</a>
+                        <a href="#psychology" class="nav-link px-3 py-2 rounded-md text-sm font-medium">顧客心理</a>
+                        <a href="#value" class="nav-link px-3 py-2 rounded-md text-sm font-medium">價值塑造</a>
+                        <a href="#blueprint" class="nav-link px-3 py-2 rounded-md text-sm font-medium">策略藍圖</a>
+                        <a href="#interaction" class="nav-link px-3 py-2 rounded-md text-sm font-medium">銷售互動</a>
+                        <a href="#checklist" class="nav-link px-3 py-2 rounded-md text-sm font-medium">落地清單</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-white border border-gray-300 rounded-md py-2 px-3 text-sm">
+                        <option value="#intro">總論</option>
+                        <option value="#psychology">顧客心理</option>
+                        <option value="#value">價值塑造</option>
+                        <option value="#blueprint">策略藍圖</option>
+                        <option value="#interaction">銷售互動</option>
+                        <option value="#checklist">落地清單</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Section: Intro -->
+        <section id="intro" class="text-center py-12 md:py-20">
+            <h2 class="text-3xl md:text-5xl font-bold tracking-tight">怎樣賣龍蝦？</h2>
+            <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">從比爾・畢曉普的經典故事中，學習如何將「推銷」轉化為「行銷」。</p>
+            
+            <div class="mt-12 max-w-4xl mx-auto">
+                <h3 class="text-2xl font-bold mb-2">行銷不是更大聲的推銷</h3>
+                <p class="mb-6 text-gray-600">關鍵在於洞察人心，設計一個讓顧客自己走進來的場景。</p>
+                <div class="push-pull-container flex flex-col md:flex-row justify-center items-center gap-8 p-6 bg-white rounded-xl shadow-lg">
+                    <div class="w-full md:w-1/2 text-center p-6 rounded-lg border-2 border-dashed border-gray-300 push-pull-door push-door">
+                        <h4 class="text-xl font-bold text-[#6B8A9A]">推銷 (Push)</h4>
+                        <p class="mt-2 text-6xl">🚪</p>
+                        <p class="mt-2">話術 + 逼單</p>
+                        <p class="font-bold">你去敲門</p>
+                    </div>
+                    <div class="text-4xl font-bold text-gray-300">vs</div>
+                    <div class="w-full md:w-1/2 text-center p-6 rounded-lg border-2 border-dashed border-gray-300 push-pull-door pull-door">
+                        <h4 class="text-xl font-bold text-[#D87C5D]">行銷 (Pull)</h4>
+                        <p class="mt-2 text-6xl">🔔</p>
+                        <p class="mt-2">洞察 + 場景</p>
+                        <p class="font-bold">讓人來敲你的門</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Customer Psychology -->
+        <section id="psychology" class="py-12 md:py-16">
+            <h2 class="text-3xl font-bold text-center">主題一：洞察顧客心理</h2>
+            <p class="mt-4 text-center text-gray-600 max-w-2xl mx-auto">行銷始於對人性的理解。這裡的策略將教你如何運用社會認同、稀缺性及互惠原則，巧妙引導顧客的決策路徑。</p>
+            <div class="mt-10 grid gap-6 md:grid-cols-2">
+                <!-- Card: Chapter 2 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 02</span>
+                            <h3 class="text-xl font-bold mt-1">第一會員陷阱</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">把「怕當第一」的猶豫，轉化為「怕會落後」的焦慮。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>洞察：</strong>多數人是跟隨者，不願當白老鼠。</p>
+                            <p><strong>策略：</strong>拿出「競爭對手」的示意稿或案例，製造社會認同與競逐心態。</p>
+                            <p><strong>結果：</strong>一旦破冰，跟隨者就會蜂擁而至。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 3 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 03</span>
+                            <h3 class="text-xl font-bold mt-1">排長龍的秘密</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">先創造「人氣」，再迎接真正的「人流」。</p>
+                        <div class="border-t pt-4">
+                             <p><strong>核心：</strong>看得見的場景，遠比聽得見的訊息更有力。排隊本身就是最強的廣告。</p>
+                            <p><strong>策略：</strong>初期可用「種子顧客」或臨演製造排隊景象，引發路人好奇。</p>
+                            <p><strong>價值：</strong>需要等待才能得到的東西，感覺更有價值。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 6 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 06</span>
+                            <h3 class="text-xl font-bold mt-1">誘人的免費巧克力</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">用「價值前置」打破人們對推銷的防禦心。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>心理：</strong>人們天生抗拒被推銷，但樂於接受免費贈品。</p>
+                            <p><strong>策略：</strong>提供有感的免費試吃、試用，無附帶條件，打開溝通大門。</p>
+                            <p><strong>關鍵：</strong>精準投放給潛在客群，避免資源浪費。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 16 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 16</span>
+                            <h3 class="text-xl font-bold mt-1">別在初次約會就求婚</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">掌握建立信任的節奏與情境。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>類比：</strong>第一次見面就像約會，目標是創造良好體驗，而非立即成交。</p>
+                            <p><strong>策略：</strong>透過有價值的互動累積信任與好感，讓客戶主動提出購買意願。</p>
+                            <p><strong>結果：</strong>關係更穩固，成交更自然。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Value Shaping -->
+        <section id="value" class="py-12 md:py-16 bg-gray-50 rounded-2xl">
+            <h2 class="text-3xl font-bold text-center">主題二：重塑產品價值</h2>
+            <p class="mt-4 text-center text-gray-600 max-w-2xl mx-auto">價格不是成本加上利潤，而是顧客感知的價值。學習如何透過套餐設計、定價策略和體驗包裝，讓你的產品在顧客心中更有份量。</p>
+            <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+                <!-- Card: Chapter 1 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 01</span>
+                            <h3 class="text-xl font-bold mt-1">怎樣賣龍蝦</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">把「建議銷售」升級為「特色推薦」。</p>
+                        <div id="lobster-interactive" class="border-t pt-4">
+                            <div class="flex justify-center space-x-4 mb-4">
+                                <button id="btn-before" class="px-4 py-2 rounded-md bg-gray-200" onclick="showMenu('before', event)">原始問法</button>
+                                <button id="btn-after" class="px-4 py-2 rounded-md bg-[#D87C5D] text-white" onclick="showMenu('after', event)">優化問法</button>
+                            </div>
+                            <div id="menu-before" class="p-4 border rounded-lg bg-gray-50 hidden">
+                                <p class="font-bold">服務生問：</p>
+                                <p>"先生，您的牛排要不要加點龍蝦？"</p>
+                                <p class="text-xs text-gray-500 mt-2">顧客思考：要不要花更多錢？</p>
+                            </div>
+                            <div id="menu-after" class="p-4 border rounded-lg bg-amber-50">
+                                <p class="font-bold">服務生說：</p>
+                                <p>"主廚今晚特別推薦海陸大餐：頂級牛排搭配半隻焗烤龍蝦，佐奶油香料飯。錯過可惜！"</p>
+                                <p class="text-xs text-gray-500 mt-2">顧客思考：聽起來好棒！犒賞一下自己吧！</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 4 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 04</span>
+                            <h3 class="text-xl font-bold mt-1">三個盒子的遊戲</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">用多種規格引導顧客選擇，而非思考買不買。</p>
+                        <div class="border-t pt-4">
+                           <div class="flex flex-col sm:flex-row gap-4 text-center" id="pricing-options">
+                                <div class="flex-1 p-4 border rounded-lg">
+                                    <h4 class="font-bold">小杯</h4>
+                                    <p class="text-2xl font-bold">$100</p>
+                                </div>
+                                <div class="flex-1 p-4 border-2 border-[#D87C5D] rounded-lg relative ring-2 ring-offset-2 ring-[#D87C5D]">
+                                    <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#D87C5D] text-white px-3 py-1 text-sm rounded-full">推薦</span>
+                                    <h4 class="font-bold">中杯</h4>
+                                    <p class="text-2xl font-bold">$150</p>
+                                </div>
+                                <div class="flex-1 p-4 border rounded-lg">
+                                    <h4 class="font-bold">大杯</h4>
+                                    <p class="text-2xl font-bold">$250</p>
+                                </div>
+                           </div>
+                           <div class="mt-4 chart-container">
+                                <canvas id="pricingChart"></canvas>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 10 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 10</span>
+                            <h3 class="text-xl font-bold mt-1">星巴克為何賣5美元</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">設計「體驗盒」，讓顧客為感知價值買單。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>思維轉變：</strong>先畫一個高價盒子，再思考要填入什麼價值，而不是從成本出發。</p>
+                            <div class="mt-2 p-4 border-2 border-dashed rounded-lg text-center bg-gray-50">
+                                <h4 class="font-bold">高價值體驗盒</h4>
+                                <p class="text-sm text-gray-500">空間 + 品項 + 服務 + 品牌故事</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 11 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 11</span>
+                            <h3 class="text-xl font-bold mt-1">美食 vs 速食</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">選定你的戰場，不要卡在中間動彈不得。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>定位：</strong>你是追求大眾效率的速食店，還是專注小眾體驗的美食餐廳？</p>
+                            <p class="text-sm text-red-600"><strong>警示：</strong>定位模糊最危險，兩邊的客人都抓不到。</p>
+                            <div class="mt-4 chart-container">
+                                <canvas id="positioningChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Card: Chapter 12 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 12</span>
+                            <h3 class="text-xl font-bold mt-1">讓顧客先打開錢包</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">設計階梯式產品，引導顧客逐步深入。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>心理：</strong>利用「承諾一致性」，小承諾會帶來大承諾。</p>
+                            <div class="mt-4 flex flex-col items-center space-y-2">
+                                <div class="value-ladder-step w-full p-3 text-center border rounded-lg shadow-sm"><strong>核心方案</strong> ($$$)</div>
+                                <div class="text-2xl">↑</div>
+                                <div class="value-ladder-step w-full p-3 text-center border rounded-lg shadow-sm"><strong>低價入門包</strong> ($)</div>
+                                <div class="text-2xl">↑</div>
+                                <div class="value-ladder-step w-full p-3 text-center border rounded-lg shadow-sm"><strong>免費研討會/資料</strong> (Free)</div>
+                                <p class="text-sm text-gray-500 mt-2">每一步都要提供真實價值！</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Blueprint -->
+        <section id="blueprint" class="py-12 md:py-16">
+            <h2 class="text-3xl font-bold text-center">主題三：擘劃策略藍圖</h2>
+            <p class="mt-4 text-center text-gray-600 max-w-2xl mx-auto">成功的行銷不是隨機的煙火，而是一套精心設計的系統。從定義顧客是誰，到設計完整的轉換流程，這些策略幫助你建立可持續成長的行銷引擎。</p>
+            <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <!-- Card: Chapter 7 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 07</span>
+                            <h3 class="text-xl font-bold mt-1">籃球心智陷阱</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">從「產品中心」轉為「顧客中心」。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>警示：</strong>只專注產品（籃球），市場（球賽規則）一變就完蛋。</p>
+                            <p><strong>策略：</strong>定義你要服務的客群（球迷），為他們打造完整的解決方案（生態系）。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 8 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 08</span>
+                            <h3 class="text-xl font-bold mt-1">鳥籠宣傳手冊</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">先有藍圖，再做工具，否則只是浪費資源。</p>
+                        <div class="border-t pt-4">
+                            <p class="font-bold">藍圖四步：</p>
+                            <ol class="list-decimal list-inside text-gray-700">
+                                <li>鎖定客群</li>
+                                <li>定義差異</li>
+                                <li>免費引線</li>
+                                <li>設計流程</li>
+                            </ol>
+                            <p class="mt-2"><strong>核心：</strong>工具是為了服務流程，不是為了辦活動而做。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 9 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 09</span>
+                            <h3 class="text-xl font-bold mt-1">一鳴驚人的大手筆</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">用「事件」引爆市場注意力。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>定義：</strong>「大手筆」不等於燒錢，而是「創意 × 媒體化」。</p>
+                            <p><strong>策略：</strong>將展會攤位遊戲化、互動化，創造記憶點。</p>
+                            <p class="font-bold mt-2">衡量指標：</p>
+                            <ul class="list-disc list-inside text-gray-700">
+                                <li>到攤人流</li>
+                                <li>名單品質</li>
+                                <li>後續預約數</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Interaction -->
+        <section id="interaction" class="py-12 md:py-16 bg-gray-50 rounded-2xl">
+            <h2 class="text-3xl font-bold text-center">主題四：優化銷售互動</h2>
+            <p class="mt-4 text-center text-gray-600 max-w-2xl mx-auto">最好的銷售是讓顧客感覺被理解、被賦能。學習如何從單向的產品演示，轉變為雙向的教練式溝通，建立長期而有價值的客戶關係。</p>
+            <div class="mt-10 grid gap-6 md:grid-cols-2">
+                <!-- Card: Chapter 5 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 05</span>
+                            <h3 class="text-xl font-bold mt-1">泰坦尼克船長要什麼</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">賣對的東西給對的人，建立長期價值。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>洞察：</strong>船長在沉船時要的是救生艇，不是香檳。</p>
+                            <p><strong>策略：</strong>透過教育與診斷，對齊客戶的真實需求，而非只看短期業績。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 13 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 13</span>
+                            <h3 class="text-xl font-bold mt-1">速效藥丸</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">先命名問題，讓對方自我診斷。</p>
+                        <div class="border-t pt-4">
+                           <div id="diagnosis-tool">
+                               <p class="font-bold mb-2">您的團隊是否正面臨以下困擾？ (單選)</p>
+                               <div class="space-y-2">
+                                   <div><input type="radio" name="problem" value="A" id="qA" onchange="showDiagnosis()"><label for="qA" class="ml-2">新客戶開發困難，名單不足。</label></div>
+                                   <div><input type="radio" name="problem" value="B" id="qB" onchange="showDiagnosis()"><label for="qB" class="ml-2">有很多潛在客戶，但轉換率低。</label></div>
+                                   <div><input type="radio" name="problem" value="C" id="qC" onchange="showDiagnosis()"><label for="qC" class="ml-2">客戶單價低，難以提升價值。</label></div>
+                               </div>
+                               <div id="diagnosis-result" class="mt-4 p-4 bg-amber-50 rounded-lg hidden"></div>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 14 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 14</span>
+                            <h3 class="text-xl font-bold mt-1">把演示變教練</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">從被動被問，到主動引導。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>轉變：</strong>不做傳統Pitch，改用工作坊形式，引導客戶自己說出需求。</p>
+                            <p><strong>策略：</strong>你提問，他寫目標，現場產出初步成果，創造即時價值感。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card: Chapter 15 -->
+                <div class="strategy-card bg-white rounded-xl shadow-md cursor-pointer" onclick="toggleCard(this)">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-bold text-[#D87C5D]">遊戲 15</span>
+                            <h3 class="text-xl font-bold mt-1">登山嚮導</h3>
+                        </div>
+                        <div class="chevron text-2xl text-gray-400 transition-transform">▼</div>
+                    </div>
+                    <div class="details px-6 pb-6">
+                        <p class="text-gray-600 mb-4">先肯定對方，再溫和帶路。</p>
+                        <div class="border-t pt-4">
+                            <p><strong>態度：</strong>先承認對方已在「半山腰」的努力與成果。</p>
+                            <p><strong>策略：</strong>找到他的成長邊界，提出剛好高一個層級的協助方案。</p>
+                            <div class="mt-4 flex items-center justify-between text-sm">
+                                <span>Base</span>
+                                <div class="flex-grow h-0.5 bg-gray-300 mx-2"></div>
+                                <span>Camp 1 (Your help)</span>
+                                <div class="flex-grow h-0.5 bg-gray-300 mx-2"></div>
+                                <span>Summit</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Checklist -->
+        <section id="checklist" class="py-12 md:py-20 text-center">
+            <h2 class="text-3xl font-bold">森林心法與落地清單</h2>
+            <p class="mt-4 text-gray-600 max-w-2xl mx-auto">行銷森林非一夕長成。這裡提供一份可執行的清單，幫助你將今日所學付諸行動。選擇 2-3 項，在本季開始試跑吧！</p>
+            <div class="mt-10 max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg text-left">
+                <h3 class="font-bold text-xl mb-4">我的行銷行動清單</h3>
+                <div id="action-list" class="space-y-3">
+                </div>
+                <div class="mt-6 text-center">
+                    <p id="completion-message" class="text-green-600 font-bold hidden">太棒了！你已經規劃好下一步！</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm">
+            <p>靈感來源：比爾・畢曉普《怎樣賣龍蝦》</p>
+            <p class="mt-1">此為互動式學習應用，非商業用途</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const sections = document.querySelectorAll('main section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mobileNav = document.getElementById('mobile-nav');
+
+            function updateActiveLink() {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+                
+                if (mobileNav.value !== `#${current}`) {
+                    mobileNav.value = `#${current}`;
+                }
+            }
+
+            window.addEventListener('scroll', updateActiveLink);
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            mobileNav.addEventListener('change', function() {
+                document.querySelector(this.value).scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            initializePricingChart();
+            initializePositioningChart();
+            initializeChecklist();
+        });
+
+        function toggleCard(element) {
+            element.classList.toggle('open');
+        }
+
+        function showMenu(type, event) {
+            event.stopPropagation();
+            const beforeMenu = document.getElementById('menu-before');
+            const afterMenu = document.getElementById('menu-after');
+            const btnBefore = document.getElementById('btn-before');
+            const btnAfter = document.getElementById('btn-after');
+
+            if (type === 'before') {
+                beforeMenu.classList.remove('hidden');
+                afterMenu.classList.add('hidden');
+                btnBefore.classList.add('bg-[#D87C5D]', 'text-white');
+                btnBefore.classList.remove('bg-gray-200');
+                btnAfter.classList.remove('bg-[#D87C5D]', 'text-white');
+                btnAfter.classList.add('bg-gray-200');
+            } else {
+                afterMenu.classList.remove('hidden');
+                beforeMenu.classList.add('hidden');
+                btnAfter.classList.add('bg-[#D87C5D]', 'text-white');
+                btnAfter.classList.remove('bg-gray-200');
+                btnBefore.classList.remove('bg-[#D87C5D]', 'text-white');
+                btnBefore.classList.add('bg-gray-200');
+            }
+        }
+        
+        let pricingChartInstance;
+        function initializePricingChart() {
+            const ctx = document.getElementById('pricingChart').getContext('2d');
+            pricingChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['小杯', '中杯 (推薦)', '大杯'],
+                    datasets: [{
+                        label: '顧客選擇比例',
+                        data: [15, 70, 15],
+                        backgroundColor: ['#A0AEC0', '#D87C5D', '#A0AEC0'],
+                        borderColor: ['#A0AEC0', '#D87C5D', '#A0AEC0'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initializePositioningChart() {
+            const ctx = document.getElementById('positioningChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '美食',
+                        data: [{x: 8, y: 8}],
+                        backgroundColor: '#D87C5D',
+                        pointRadius: 10,
+                        pointHoverRadius: 12
+                    }, {
+                        label: '速食',
+                        data: [{x: 2, y: 2}],
+                        backgroundColor: '#6B8A9A',
+                        pointRadius: 10,
+                        pointHoverRadius: 12
+                    }, {
+                        label: '危險區',
+                        data: [{x: 5, y: 5}],
+                        backgroundColor: 'rgba(255, 204, 0, 0.5)',
+                        pointRadius: 15,
+                        pointStyle: 'rectRot'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.label === '危險區') return '定位模糊';
+                                    return context.dataset.label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            min: 0, max: 10,
+                            title: { display: true, text: '價格 / 效率' }
+                        },
+                        y: {
+                            min: 0, max: 10,
+                            title: { display: true, text: '體驗 / 品質' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function showDiagnosis() {
+            const resultDiv = document.getElementById('diagnosis-result');
+            const selected = document.querySelector('input[name="problem"]:checked').value;
+            let text = '';
+            switch(selected) {
+                case 'A':
+                    text = '<strong>初步診斷：</strong>流量不足。您可能需要「誘人的免費巧克力」(遊戲06) 或「排長龍的秘密」(遊戲03) 來吸引新目光。';
+                    break;
+                case 'B':
+                    text = '<strong>初步診斷：</strong>轉換率瓶頸。試試「把演示變教練」(遊戲14) 或「價值樓梯」(遊戲12) 來優化您的銷售流程。';
+                    break;
+                case 'C':
+                    text = '<strong>初步診斷：</strong>價值感知低。建議採用「三個盒子的遊戲」(遊戲04) 和「體驗盒」(遊戲10) 來重塑您的產品價值。';
+                    break;
+            }
+            resultDiv.innerHTML = text;
+            resultDiv.classList.remove('hidden');
+        }
+
+        function initializeChecklist() {
+            const listContainer = document.getElementById('action-list');
+            const message = document.getElementById('completion-message');
+            const items = [
+                '客群定義', '價值樓梯設計', '三盒定價策略', '設計免費鉤子',
+                '規劃活動大手筆', '導入教練化銷售', '製作自評工具',
+                '包裝產品體驗', '繪製流程藍圖', '設定衡量指標'
+            ];
+            
+            items.forEach((item, index) => {
+                const id = `check-${index}`;
+                const div = document.createElement('div');
+                div.className = 'flex items-center';
+                div.innerHTML = `
+                    <input id="${id}" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-[#D87C5D] focus:ring-[#D87C5D]">
+                    <label for="${id}" class="ml-3 block text-gray-900">${item}</label>
+                `;
+                listContainer.appendChild(div);
+            });
+
+            listContainer.addEventListener('change', () => {
+                const checkboxes = listContainer.querySelectorAll('input[type="checkbox"]');
+                const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+                if (checkedCount >= 2) {
+                    message.classList.remove('hidden');
+                } else {
+                    message.classList.add('hidden');
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
