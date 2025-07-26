@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: 我選擇了主題式探索的資訊架構，而非原始大綱的線性結構。我將16個行銷「遊戲」歸納為四大核心主題：顧客心理、價值塑造、策略藍圖、銷售互動。這種結構能讓使用者根據自身需求或興趣，自由探索相關的策略，提升學習效率與參與感。主導覽列提供快速跳轉，而每個策略以可展開的「卡片」形式呈現，初始介面簡潔，點擊後才顯示細節，鼓勵使用者主動探索。結尾的「落地清單」則將理論轉化為可操作的工具，強化實用性。這樣的設計旨在將被動的閱讀轉化為主動的、遊戲化的學習體驗。 -->
+    <!-- Application Structure Plan: 我選擇了主題式探索的資訊架構，而非原始大綱的線性結構。我將16個行銷「遊戲」歸納為四大核心主題：顧客心理、價值塑造、策略藍圖、銷售互動。這種結構能讓使用者根據自身需求或興趣，自由探索相關的策略，提升學習效率與參與感。主導覽列提供快速跳轉，而每個策略以可展開的「卡片」形式呈現，初始介面簡潔，點擊後才顯示細節，鼓勵使用者主動探索。結尾的「落地清單」則將理論轉化為可操作的工具，強化實用性。本次更新新增「測驗功能」區塊，提供互動式問答，強化學習效果。這樣的設計旨在將被動的閱讀轉化為主動的、遊戲化的學習體驗。 -->
     <!-- Visualization & Content Choices: 
         - 總論 (Push vs Pull): 使用HTML/CSS製作的互動示意圖，滑鼠懸停時改變樣式，直觀傳達「推銷」與「行銷」的差異。Goal: Compare. Method: Interactive Divs.
         - 章1 (菜單對比): 使用按鈕切換顯示不同菜單內容，模擬Before/After效果。Goal: Compare. Method: JS Toggle.
@@ -19,8 +19,9 @@
         - 章12 (價值樓梯): 使用HTML/CSS Flexbox製作垂直階梯圖，每階可點擊。Goal: Organize. Method: Styled HTML divs.
         - 章13 (自評量表): 簡單的HTML表單（radio buttons），使用者選擇後，JS會顯示對應的「診斷結果」。Goal: Inform/Engage. Method: HTML Form + JS Logic.
         - 章15 (登山嚮導圖): 使用HTML/CSS製作的抽象路徑圖，強調過程與階段性。Goal: Organize. Method: Styled HTML divs.
+        - 測驗功能: 使用HTML/CSS構建問答介面，JavaScript管理問題狀態、答案檢查、分數計算及流程控制。Goal: Assess/Engage. Method: HTML/CSS + JS Logic.
         - 其他圖示: 均使用Unicode字符或Tailwind CSS構建的抽象形狀，確保無圖片或SVG。
-        - Justification: 所有互動設計都旨在將抽象的行銷概念具象化、可操作化，加深使用者的理解與記憶。Chart.js用於需要精確數據表達的場景，而簡單的HTML/CSS互動則用於快速、輕量的概念示意。 -->
+        - Justification: 所有互動設計都旨在將抽象的行銷概念具象化、可操作化，加深使用者的理解與記憶。Chart.js用於需要精確數據表達的場景，而簡單的HTML/CSS互動則用於快速、輕量的概念示意。新增測驗功能則直接響應使用者需求，提供即時學習反饋。 -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
@@ -79,6 +80,20 @@
             transform: translateY(-4px);
             background-color: #EFEAE3;
         }
+        .quiz-option-button {
+            transition: all 0.2s ease;
+        }
+        .quiz-option-button:hover {
+            background-color: #EFEAE3;
+        }
+        .quiz-option-button.correct {
+            background-color: #D4EDDA;
+            border-color: #28A745;
+        }
+        .quiz-option-button.incorrect {
+            background-color: #F8D7DA;
+            border-color: #DC3545;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -97,6 +112,7 @@
                         <a href="#value" class="nav-link px-3 py-2 rounded-md text-sm font-medium">價值塑造</a>
                         <a href="#blueprint" class="nav-link px-3 py-2 rounded-md text-sm font-medium">策略藍圖</a>
                         <a href="#interaction" class="nav-link px-3 py-2 rounded-md text-sm font-medium">銷售互動</a>
+                        <a href="#quiz" class="nav-link px-3 py-2 rounded-md text-sm font-medium">測驗功能</a>
                         <a href="#checklist" class="nav-link px-3 py-2 rounded-md text-sm font-medium">落地清單</a>
                     </div>
                 </div>
@@ -107,6 +123,7 @@
                         <option value="#value">價值塑造</option>
                         <option value="#blueprint">策略藍圖</option>
                         <option value="#interaction">銷售互動</option>
+                        <option value="#quiz">測驗功能</option>
                         <option value="#checklist">落地清單</option>
                     </select>
                 </div>
@@ -414,7 +431,7 @@
                         <p class="text-gray-600 mb-4">用「事件」引爆市場注意力。</p>
                         <div class="border-t pt-4">
                             <p><strong>定義：</strong>「大手筆」不等於燒錢，而是「創意 × 媒體化」。</p>
-                            <p><strong>策略：</strong>將展會攤位遊戲化、互動化，創造記憶點。</p>
+                            <p><strong>策略：：</strong>將展會攤位遊戲化、互動化，創造記憶點。</p>
                             <p class="font-bold mt-2">衡量指標：</p>
                             <ul class="list-disc list-inside text-gray-700">
                                 <li>到攤人流</li>
@@ -503,7 +520,7 @@
                         <p class="text-gray-600 mb-4">先肯定對方，再溫和帶路。</p>
                         <div class="border-t pt-4">
                             <p><strong>態度：</strong>先承認對方已在「半山腰」的努力與成果。</p>
-                            <p><strong>策略：</strong>找到他的成長邊界，提出剛好高一個層級的協助方案。</p>
+                            <p><strong>策略：：</strong>找到他的成長邊界，提出剛好高一個層級的協助方案。</p>
                             <div class="mt-4 flex items-center justify-between text-sm">
                                 <span>Base</span>
                                 <div class="flex-grow h-0.5 bg-gray-300 mx-2"></div>
@@ -513,6 +530,34 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Quiz -->
+        <section id="quiz" class="py-12 md:py-16 bg-gray-50 rounded-2xl">
+            <h2 class="text-3xl font-bold text-center">測驗功能：檢視你的行銷功力！</h2>
+            <p class="mt-4 text-center text-gray-600 max-w-2xl mx-auto">透過測驗，快速檢視您對《怎樣賣龍蝦》核心概念的理解程度。每道題目都來自書中的實用策略。</p>
+            <div class="mt-10 max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg text-left">
+                <div id="quiz-start-screen">
+                    <p class="text-center text-lg mb-6">準備好挑戰了嗎？點擊下方按鈕開始測驗！</p>
+                    <button id="start-quiz-btn" class="w-full bg-[#D87C5D] text-white py-3 rounded-lg text-lg font-bold hover:bg-[#C26B50]">開始測驗</button>
+                </div>
+
+                <div id="quiz-question-screen" class="hidden">
+                    <p class="text-sm text-gray-500 mb-2" id="question-counter">問題 1 / 7</p>
+                    <h3 class="text-xl font-bold mb-6" id="quiz-question"></h3>
+                    <div id="quiz-options" class="space-y-3">
+                    </div>
+                    <div id="quiz-feedback" class="mt-4 text-center font-bold hidden"></div>
+                    <button id="next-question-btn" class="w-full bg-[#6B8A9A] text-white py-3 rounded-lg text-lg font-bold mt-6 hover:bg-[#5A7889] hidden">下一題</button>
+                </div>
+
+                <div id="quiz-result-screen" class="hidden text-center">
+                    <h3 class="text-2xl font-bold mb-4">測驗結果</h3>
+                    <p class="text-xl mb-6">您的得分：<span id="quiz-score" class="text-[#D87C5D] font-bold"></span> / <span id="quiz-total"></span></p>
+                    <p id="quiz-remark" class="text-lg text-gray-700 mb-8"></p>
+                    <button id="restart-quiz-btn" class="w-full bg-[#D87C5D] text-white py-3 rounded-lg text-lg font-bold hover:bg-[#C26B50]">重新開始測驗</button>
                 </div>
             </div>
         </section>
@@ -586,6 +631,7 @@
             initializePricingChart();
             initializePositioningChart();
             initializeChecklist();
+            initializeQuiz();
         });
 
         function toggleCard(element) {
@@ -749,6 +795,198 @@
                     message.classList.add('hidden');
                 }
             });
+        }
+
+        // Quiz Logic
+        const quizQuestions = [
+            {
+                question: "將「要不要加龍蝦？」轉為「今晚主打：牛排＋龍蝦＋米飯套餐」的目的是什麼？",
+                options: [
+                    "讓顧客感到被尊重",
+                    "創造決策畫面、時間稀缺、體面選擇",
+                    "增加銷售員的提成",
+                    "讓菜單看起來更豐富"
+                ],
+                correctAnswer: 1
+            },
+            {
+                question: "如何讓顧客從「怕當第一」轉變為「怕落後」？",
+                options: [
+                    "提供大幅折扣",
+                    "舉辦抽獎活動",
+                    "展示競爭對手的示意稿，製造社會認同",
+                    "強調產品的獨特性"
+                ],
+                correctAnswer: 2
+            },
+            {
+                question: "「排長龍的秘密」中，為什麼「場景」比「訊息」更重要？",
+                options: [
+                    "因為訊息容易被忽略",
+                    "因為場景能直接傳達產品品質",
+                    "排隊本身就是最強的社會證明，能放大價值感",
+                    "為了節省廣告費用"
+                ],
+                correctAnswer: 2
+            },
+            {
+                question: "三種規格（Good/Better/Best）的定價策略，主要目的是什麼？",
+                options: [
+                    "讓顧客有更多選擇",
+                    "滿足不同預算的顧客",
+                    "引導多數顧客選擇「中杯」，同時抬升客單價",
+                    "測試市場對價格的敏感度"
+                ],
+                correctAnswer: 2
+            },
+            {
+                question: "「誘人的免費巧克力」策略的核心是什麼？",
+                options: [
+                    "讓產品看起來更便宜",
+                    "吸引大量人潮",
+                    "提供有感價值，打破顧客對推銷的防禦心",
+                    "快速清庫存"
+                ],
+                correctAnswer: 2
+            },
+            {
+                question: "星巴克賣5美元咖啡的「體驗盒」原則，強調顧客購買的是什麼？",
+                options: [
+                    "咖啡豆的品質",
+                    "咖啡師的技術",
+                    "感知價值，而非單純的商品成本",
+                    "品牌知名度"
+                ],
+                correctAnswer: 2
+            },
+            {
+                question: "階梯式產品設計（免費研討會→低價起步包→核心方案）利用了顧客的哪種心理？",
+                options: [
+                    "貪小便宜心理",
+                    "承諾一致性",
+                    "從眾心理",
+                    "稀缺心理"
+                ],
+                correctAnswer: 1
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let shuffledQuestions = [];
+
+        const quizStartScreen = document.getElementById('quiz-start-screen');
+        const quizQuestionScreen = document.getElementById('quiz-question-screen');
+        const quizResultScreen = document.getElementById('quiz-result-screen');
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const quizQuestion = document.getElementById('quiz-question');
+        const quizOptions = document.getElementById('quiz-options');
+        const quizFeedback = document.getElementById('quiz-feedback');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const quizScore = document.getElementById('quiz-score');
+        const quizTotal = document.getElementById('quiz-total');
+        const quizRemark = document.getElementById('quiz-remark');
+        const restartQuizBtn = document.getElementById('restart-quiz-btn');
+
+        function initializeQuiz() {
+            startQuizBtn.addEventListener('click', startQuiz);
+            nextQuestionBtn.addEventListener('click', showNextQuestion);
+            restartQuizBtn.addEventListener('click', resetQuiz);
+            resetQuiz();
+        }
+
+        function startQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            shuffledQuestions = [...quizQuestions].sort(() => Math.random() - 0.5); // Shuffle questions
+            
+            quizStartScreen.classList.add('hidden');
+            quizResultScreen.classList.add('hidden');
+            quizQuestionScreen.classList.remove('hidden');
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const questionData = shuffledQuestions[currentQuestionIndex];
+            quizQuestion.textContent = questionData.question;
+            quizOptions.innerHTML = '';
+            quizFeedback.classList.add('hidden');
+            nextQuestionBtn.classList.add('hidden');
+            questionCounter.textContent = `問題 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+
+            questionData.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'quiz-option-button w-full text-left p-3 border rounded-lg bg-gray-50 hover:bg-gray-100';
+                button.onclick = () => checkAnswer(index);
+                quizOptions.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedIndex) {
+            const questionData = shuffledQuestions[currentQuestionIndex];
+            const buttons = quizOptions.querySelectorAll('.quiz-option-button');
+
+            buttons.forEach((button, index) => {
+                button.disabled = true; // Disable all buttons after selection
+                if (index === questionData.correctAnswer) {
+                    button.classList.add('correct');
+                } else if (index === selectedIndex) {
+                    button.classList.add('incorrect');
+                }
+            });
+
+            if (selectedIndex === questionData.correctAnswer) {
+                score++;
+                quizFeedback.textContent = '正確！';
+                quizFeedback.classList.remove('text-red-600', 'hidden');
+                quizFeedback.classList.add('text-green-600');
+            } else {
+                quizFeedback.textContent = '錯誤！正確答案是：' + questionData.options[questionData.correctAnswer];
+                quizFeedback.classList.remove('text-green-600', 'hidden');
+                quizFeedback.classList.add('text-red-600');
+            }
+            quizFeedback.classList.remove('hidden');
+            nextQuestionBtn.classList.remove('hidden');
+        }
+
+        function showNextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizQuestionScreen.classList.add('hidden');
+            quizResultScreen.classList.remove('hidden');
+            quizScore.textContent = score;
+            quizTotal.textContent = shuffledQuestions.length;
+
+            if (score === shuffledQuestions.length) {
+                quizRemark.textContent = '恭喜！您是行銷大師！';
+                quizRemark.classList.remove('text-red-600');
+                quizRemark.classList.add('text-green-600');
+            } else if (score >= shuffledQuestions.length / 2) {
+                quizRemark.textContent = '表現不錯！再接再厲！';
+                quizRemark.classList.remove('text-red-600', 'text-green-600');
+                quizRemark.classList.add('text-blue-600');
+            } else {
+                quizRemark.textContent = '別氣餒，再多複習幾次吧！';
+                quizRemark.classList.remove('text-green-600', 'text-blue-600');
+                quizRemark.classList.add('text-red-600');
+            }
+        }
+
+        function resetQuiz() {
+            quizStartScreen.classList.remove('hidden');
+            quizQuestionScreen.classList.add('hidden');
+            quizResultScreen.classList.add('hidden');
+            score = 0;
+            currentQuestionIndex = 0;
         }
 
     </script>
