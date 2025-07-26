@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《稻盛和夫的實學：經營與會計》互動導覽</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A thematic, non-linear dashboard structure was chosen over a linear slide format to enhance user engagement and exploration. The architecture consists of a main header, a top navigation bar for major sections (Prologue, Philosophy, 7 Principles, Conclusion, Quiz), and a dynamic content area. The core interaction is within the '7 Principles' section, where users click on interactive cards to reveal detailed information in the main content view. A new 'Quiz' section allows users to test their knowledge with interactive multiple-choice questions. This approach breaks down complex information into digestible chunks and empowers users to navigate based on their interests, improving comprehension and retention. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: 7 Accounting Principles. Goal: Organize/Inform. Viz: Interactive HTML cards with hover/click effects. Interaction: Clicking a card updates the main content area with the principle's details. Justification: This is more engaging than a static list and allows focused learning. Method: HTML/CSS/JS.
+        - Report Info: Double-check principle. Goal: Organize. Viz: Simple flowchart diagram. Interaction: Static visual. Justification: Visually clarifies the process of separating duties. Method: HTML/Tailwind CSS.
+        - Report Info: Maximizing Efficiencies principle. Goal: Compare/Inform. Viz: Bar Chart. Interaction: The chart visually represents the "per-hour efficiency" concept. Justification: Adds a quantitative, dynamic element to an otherwise qualitative report, making the concept more concrete. Library: Chart.js (Canvas).
+        - Report Info: All other textual content. Goal: Inform. Viz: Formatted text blocks. Interaction: Content is dynamically loaded based on navigation clicks. Justification: Creates a seamless single-page experience. Method: JS updating innerHTML.
+        - Report Info: Key concepts for quiz. Goal: Test understanding. Viz: Interactive multiple-choice questions. Interaction: Users select an answer from options, receive immediate feedback, and proceed to the next question. Justification: Provides an active learning and self-assessment tool with direct answer selection. Method: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF8;
+            color: #3a3a3a;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-button.active, .nav-button:hover {
+            color: #A37E63;
+            border-bottom-color: #A37E63;
+        }
+        .principle-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #EAE0D5;
+        }
+        .principle-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #A37E63;
+        }
+        .content-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .quiz-option-button {
+            transition: all 0.2s ease;
+        }
+        .quiz-option-button:hover:not(:disabled) {
+            background-color: #EAE0D5;
+        }
+        .quiz-option-button.correct {
+            background-color: #D4EDDA; /* Light green */
+            border-color: #28A745; /* Green */
+        }
+        .quiz-option-button.incorrect {
+            background-color: #F8D7DA; /* Light red */
+            border-color: #DC3545; /* Red */
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-[#A37E63] mb-2">《稻盛和夫的實學：經營與會計》</h1>
+            <p class="text-lg text-gray-600">經營者必修的會計實學與經營原則</p>
+        </header>
+
+        <nav class="flex justify-center border-b border-gray-200 mb-8">
+            <button data-section="intro" class="nav-button active text-lg font-medium py-2 px-4 cursor-pointer">序章</button>
+            <button data-section="philosophy" class="nav-button text-lg font-medium py-2 px-4 cursor-pointer">經營哲學</button>
+            <button data-section="principles" class="nav-button text-lg font-medium py-2 px-4 cursor-pointer">七大會計原則</button>
+            <button data-section="conclusion" class="nav-button text-lg font-medium py-2 px-4 cursor-pointer">結語與啟示</button>
+            <button data-section="quiz" class="nav-button text-lg font-medium py-2 px-4 cursor-pointer">測驗功能</button>
+        </nav>
+
+        <main id="content-area">
+        </main>
+
+    </div>
+
+    <script>
+        const contentData = {
+            intro: {
+                title: '序章：會計的重要性',
+                content: `
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <p class="mb-4 text-lg">本節將闡述會計在企業經營中的核心地位。許多經營者，包括稻盛和夫先生本人在初創時期，都曾因忽視會計的本質而面臨困境。理解會計不僅是財務人員的工作，更是經營者做出正確判斷的基礎。</p>
+                        <ul class="list-disc list-inside space-y-3 text-gray-700">
+                            <li><strong class="text-[#A37E63]">初創困境：</strong>稻盛和夫初創京瓷時，即使帳面顯示盈餘，卻面臨現金流短缺的窘境，甚至需要向銀行借錢才能發放紅利。這讓他深刻體會到帳面利潤與實際現金的差距。</li>
+                            <li><strong class="text-[#A37E63]">經營核心：</strong>他堅信，經營者若不理解會計，將無法準確判斷經營的成敗。會計不僅是記錄，更是指引企業方向的「經營的中樞核心」。</li>
+                        </ul>
+                    </div>
+                `
+            },
+            philosophy: {
+                title: '實學背景與哲學基礎',
+                content: `
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <p class="mb-4 text-lg">稻盛和夫的會計學並非來自教科書，而是源於實踐，並與他獨特的經營哲學深度融合。本節將介紹這套實學的由來，以及其背後的人本思想。</p>
+                        <ul class="list-disc list-inside space-y-3 text-gray-700">
+                            <li><strong class="text-[#A37E63]">自學之路：</strong>稻盛先生原為工程師，是透過在經營第一線的親身實踐與摸索，自學掌握了會計與管理知識。</li>
+                            <li><strong class="text-[#A37E63]">哲學融合：</strong>他將這些得來不易的會計知識，與他一生貫徹的「追求為人之正道」的經營哲學相結合，形成了獨樹一格的管理會計系統。</li>
+                            <li><strong class="text-[#A37E63]">系統建構：</strong>這套系統並非一蹴可幾，而是他與會計經理長年累月反覆討論、辯證，逐步建構出一套真正能服務於經營、提升決策品質的會計系統。</li>
+                        </ul>
+                    </div>
+                `
+            },
+            principles: {
+                title: '七大會計原則總覽',
+                content: `
+                    <div class="text-center mb-6">
+                        <p class="text-lg text-gray-700">探索稻盛和夫經營成功的七大基石。這些原則不僅是會計規範，更是經營的智慧結晶。點擊任一原則以深入了解其精髓。</p>
+                    </div>
+                    <div id="principles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                `
+            },
+            conclusion: {
+                title: '結語與啟示',
+                content: `
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <p class="mb-4 text-lg">稻盛和夫的會計實學最終回歸到一個核心觀點：會計是為了經營而存在。它不僅是過去的成績單，更是未來的航海圖。本節總結了這套哲學的關鍵啟示。</p>
+                        <ul class="list-disc list-inside space-y-3 text-gray-700">
+                            <li><strong class="text-[#A37E63]">會計的重要性：</strong>稻盛和夫一再強調：「不懂會計，就無法真正經營。」會計是企業判斷方向、評估健康狀況的「儀表板」。</li>
+                            <li><strong class="text-[#A37E63]">經營關鍵：</strong>將會計原則與經營哲學緊密結合，是實現高效、透明與永續經營的不二法門。</li>
+                            <li><strong class="text-[#A37E63]">給企業的建議：</strong>企業應參考這些原則，設計出符合自身需求的管理會計系統，並努力將其精神融入企業文化，成為全員的共同價值觀。</li>
+                        </ul>
+                    </div>
+                `
+            },
+            quiz: {
+                title: '測驗功能：多選題',
+                content: `
+                    <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                        <p class="mb-4 text-lg">透過多選題測驗，測試您對稻盛和夫會計實學的理解程度！</p>
+                        <div id="quiz-card-container" class="relative bg-gray-50 border border-gray-200 rounded-lg p-8 mb-6 overflow-hidden min-h-[250px] flex flex-col justify-between">
+                            <div>
+                                <p id="quiz-question" class="text-xl font-semibold text-gray-800 mb-6"></p>
+                                <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- Options will be rendered here -->
+                                </div>
+                            </div>
+                            <div id="quiz-feedback" class="mt-4 text-lg font-bold"></div>
+                            <button id="next-question-btn" class="mt-6 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors hidden mx-auto">下一題</button>
+                        </div>
+                        <div class="flex justify-center items-center space-x-4">
+                            <p class="text-lg text-gray-700">得分: <span id="score-display" class="font-bold text-[#A37E63]">0</span> / <span id="total-cards-display">0</span></p>
+                            <button id="reset-quiz-btn" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors">重新測驗</button>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        const principlesData = [
+            { id: 'p1', name: '現金為本的經營', icon: '💰', detail: '<h4>核心理念：掌握現金流向與存量，不僅看帳面盈餘。</h4><p class="mt-2">將所有資產視為可能轉化為現金的經費，以追求「零借貸經營」為終極目標，徹底防止帳務正確但現金不足的「黑字破產」風險。</p>' },
+            { id: 'p2', name: '一對一對應', icon: '🔗', detail: '<h4>核心理念：物品、現金與發票必須對應一致。</h4><p class="mt-2">確保企業內部的所有資源流動都有憑有據，一一對應。這是確保數據真實性的基礎，能有效避免漏帳、亂帳或任何不符的情況發生。</p>' },
+            { id: 'p3', name: '肌肉型經營', icon: '💪', detail: '<h4>核心理念：嚴控固定成本，打造精實體質。</h4><p class="mt-2">企業應如運動員般，全身都是結實的肌肉，沒有一絲贅肉。具體實踐方式包含採用二手設備、嚴格控制非必要人員編制與折舊成本，以維持企業面對景氣波動的強韌適應力。</p>' },
+            { id: 'p4', name: '完美主義', icon: '🎯', detail: '<h4>核心理念：執行時追求百分百品質，不容含糊、妥協。</h4><p class="mt-2">在會計處理與日常業務的每個環節，都必須抱持追求完美的態度。不容許任何含糊不清或便宜行事的做法，確保數據的絕對準確與可靠。</p>' },
+            { id: 'p5', name: '雙重查核', icon: '👀', detail: '<h4>核心理念：開單與支付分離，保障透明與防弊。</h4><p class="mt-2">建立內部牽制機制，例如負責下訂單的部門與負責付款的部門必須分離。這項原則能有效保障公司資產安全，確保帳務透明，並從制度上防止舞弊漏洞的產生。</p><div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200"><div class="flex items-center justify-around text-center"><div class="w-1/3"><div class="p-2 bg-blue-100 text-blue-800 rounded">採購部門<br>(開立訂單)</div></div><div class="w-1/3 text-2xl text-gray-400">➡️</div><div class="w-1/3"><div class="p-2 bg-green-100 text-green-800 rounded">會計部門<br>(審核支付)</div></div></div><p class="text-xs text-center mt-2 text-gray-500">職能分離，相互監督</p></div>' },
+            { id: 'p6', name: '效益導向', icon: '📈', detail: '<h4>核心理念：導入「每小時效益」制度與目標成本管理。</h4><p class="mt-2">不僅要看總銷售額或總利潤，更要精確衡量每個部門、甚至每位員工在單位時間內創造的附加價值。這是「阿米巴經營」（變形蟲經營）的核心，旨在激發全員潛能，追求整體效益最大化。</p><div class="chart-container mt-4"><canvas id="efficiencyChart"></canvas></div>' },
+            { id: 'p7', name: '透明化經營', icon: '🔍', detail: '<h4>核心理念：內、外部資訊公開，強化信任與企業責任。</h4><p class="mt-2">秉持光明正大的態度，將企業的經營狀況、財務數據等資訊，對內向員工、對外向社會大眾公開。這不僅能贏得員工與合作夥伴的信任，更是企業善盡社會責任、建立崇高信譽的表現。</p>' }
+        ];
+
+        const quizCards = [
+            { question: '稻盛和夫初創京瓷時，即使盈餘卻缺什麼？', answer: '現金流', options: ['人力資源', '技術專利', '現金流', '市場份額'] },
+            { question: '稻盛和夫認為，經營者若不懂什麼，難判斷經營成敗？', answer: '會計 (經營的中樞核心)', options: ['市場行銷', '生產管理', '會計 (經營的中樞核心)', '人力資源'] },
+            { question: '稻盛和夫原先的專業是什麼？', answer: '工程師', options: ['會計師', '律師', '工程師', '銷售員'] },
+            { question: '稻盛和夫的經營哲學核心是什麼？', answer: '追求人類正道', options: ['追求最大利潤', '追求市場佔有率', '追求人類正道', '追求技術領先'] },
+            { question: '稻盛和夫七大會計原則的第一原則是什麼？', answer: '現金為本的經營', options: ['現金為本的經營', '完美主義', '效益導向', '透明化經營'] },
+            { question: '「物品、現金與發票必須對應一致」是哪一項會計原則的核心理念？', answer: '一對一對應', options: ['現金為本的經營', '一對一對應', '肌肉型經營', '雙重查核'] },
+            { question: '「嚴控固定成本，採用二手設備、控制人員與折舊成本」是哪一項會計原則的體現？', answer: '肌肉型經營', options: ['完美主義', '效益導向', '肌肉型經營', '透明化經營'] },
+            { question: '「執行時追求百分百品質，不容含糊、妥協」是哪一項會計原則？', answer: '完美主義', options: ['現金為本的經營', '完美主義', '一對一對應', '雙重查核'] },
+            { question: '「開單與支付分離，保障透明與防弊漏洞」是哪一項會計原則？', answer: '雙重查核', options: ['效益導向', '透明化經營', '雙重查核', '肌肉型經營'] },
+            { question: '導入「每小時效益」制度與目標成本管理（變形蟲經營）是哪一項會計原則？', answer: '效益導向', options: ['透明化經營', '完美主義', '效益導向', '現金為本的經營'] },
+            { question: '「內、外部資訊公開，強化信任與企業責任」是哪一項會計原則？', answer: '透明化經營', options: ['肌肉型經營', '一對一對應', '雙重查核', '透明化經營'] }
+        ];
+
+        let shuffledQuizCards = [];
+        let currentCardIndex = 0;
+        let score = 0;
+
+        const contentArea = document.getElementById('content-area');
+        const navButtons = document.querySelectorAll('.nav-button');
+
+        function renderContent(section) {
+            contentArea.innerHTML = `<div class="content-fade-in">
+                <h2 class="text-2xl font-bold mb-4 text-[#A37E63]">${contentData[section].title}</h2>
+                ${contentData[section].content}
+            </div>`;
+            
+            if (section === 'principles') {
+                const grid = document.getElementById('principles-grid');
+                grid.innerHTML = principlesData.map(p => `
+                    <div class="principle-card bg-white p-6 rounded-lg cursor-pointer" data-id="${p.id}">
+                        <div class="flex items-center">
+                            <span class="text-3xl mr-4">${p.icon}</span>
+                            <h3 class="text-xl font-semibold text-gray-800">${p.name}</h3>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.querySelectorAll('.principle-card').forEach(card => {
+                    card.addEventListener('click', () => renderPrincipleDetail(card.dataset.id));
+                });
+            } else if (section === 'quiz') {
+                initializeQuiz();
+            }
+        }
+
+        function renderPrincipleDetail(id) {
+            const principle = principlesData.find(p => p.id === id);
+            contentArea.innerHTML = `
+                <div class="content-fade-in">
+                    <button id="back-to-principles" class="mb-4 text-[#A37E63] hover:underline">&larr; 返回原則總覽</button>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <span class="text-4xl mr-4">${principle.icon}</span>
+                            <h2 class="text-2xl font-bold text-gray-800">${principle.name}</h2>
+                        </div>
+                        <div class="text-gray-700 text-lg">${principle.detail}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('back-to-principles').addEventListener('click', () => {
+                setActiveNav('principles');
+                renderContent('principles');
+            });
+
+            if (id === 'p6') {
+                renderEfficiencyChart();
+            }
+        }
+
+        function renderEfficiencyChart() {
+            const ctx = document.getElementById('efficiencyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['A團隊', 'B團隊', 'C部門', 'D部門'],
+                    datasets: [{
+                        label: '每小時附加價值 (元)',
+                        data: [2500, 3200, 1800, 2900],
+                        backgroundColor: [
+                            'rgba(163, 126, 99, 0.6)',
+                            'rgba(210, 180, 140, 0.6)',
+                            'rgba(234, 224, 213, 0.8)',
+                            'rgba(188, 158, 130, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(163, 126, 99, 1)',
+                            'rgba(210, 180, 140, 1)',
+                            'rgba(234, 224, 213, 1)',
+                            'rgba(188, 158, 130, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '附加價值 (元)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `每小時附加價值: ${context.raw} 元`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function setActiveNav(section) {
+            navButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.section === section) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const section = button.dataset.section;
+                setActiveNav(section);
+                renderContent(section);
+            });
+        });
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initializeQuiz() {
+            shuffledQuizCards = shuffleArray([...quizCards]);
+            currentCardIndex = 0;
+            score = 0;
+            updateQuizDisplay();
+
+            document.getElementById('reset-quiz-btn').addEventListener('click', initializeQuiz);
+            document.getElementById('next-question-btn').addEventListener('click', nextQuestion);
+        }
+
+        function updateQuizDisplay() {
+            const quizQuestion = document.getElementById('quiz-question');
+            const quizOptions = document.getElementById('quiz-options');
+            const quizFeedback = document.getElementById('quiz-feedback');
+            const nextQuestionBtn = document.getElementById('next-question-btn');
+            const scoreDisplay = document.getElementById('score-display');
+            const totalCardsDisplay = document.getElementById('total-cards-display');
+
+            scoreDisplay.textContent = score;
+            totalCardsDisplay.textContent = shuffledQuizCards.length;
+
+            quizFeedback.textContent = ''; // Clear previous feedback
+            nextQuestionBtn.classList.add('hidden'); // Hide next button
+
+            if (currentCardIndex < shuffledQuizCards.length) {
+                const currentCard = shuffledQuizCards[currentCardIndex];
+                quizQuestion.textContent = currentCard.question;
+                quizOptions.innerHTML = ''; // Clear previous options
+
+                const shuffledOptions = shuffleArray([...currentCard.options]); // Shuffle options for each question
+
+                shuffledOptions.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.className = 'quiz-option-button w-full py-3 px-4 bg-white border border-gray-300 rounded-md text-gray-800 text-lg font-medium hover:bg-gray-100 transition-colors';
+                    button.addEventListener('click', () => checkAnswer(option, currentCard.answer, button));
+                    quizOptions.appendChild(button);
+                });
+            } else {
+                quizQuestion.textContent = `測驗結束！您答對了 ${score} 題，總共 ${shuffledQuizCards.length} 題。`;
+                quizOptions.innerHTML = '';
+                quizFeedback.textContent = '點擊「重新測驗」開始新一輪測驗。';
+            }
+        }
+
+        function checkAnswer(selectedOption, correctAnswer, clickedButton) {
+            const quizOptions = document.getElementById('quiz-options');
+            const quizFeedback = document.getElementById('quiz-feedback');
+            const nextQuestionBtn = document.getElementById('next-question-btn');
+
+            // Disable all option buttons after selection
+            Array.from(quizOptions.children).forEach(button => {
+                button.disabled = true;
+                if (button.textContent === correctAnswer) {
+                    button.classList.add('correct');
+                } else if (button === clickedButton) {
+                    button.classList.add('incorrect');
+                }
+            });
+
+            if (selectedOption === correctAnswer) {
+                score++;
+                quizFeedback.textContent = '✅ 答對了！';
+                quizFeedback.style.color = '#28A745'; // Green
+            } else {
+                quizFeedback.textContent = `❌ 答錯了，正確答案是：「${correctAnswer}」`;
+                quizFeedback.style.color = '#DC3545'; // Red
+            }
+            document.getElementById('score-display').textContent = score; // Update score immediately
+            nextQuestionBtn.classList.remove('hidden'); // Show next button
+        }
+
+        function nextQuestion() {
+            currentCardIndex++;
+            updateQuizDisplay();
+        }
+
+        renderContent('intro');
+    </script>
+
+</body>
+</html>
